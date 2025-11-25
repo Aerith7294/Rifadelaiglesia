@@ -1,241 +1,436 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Rifa Navideña</title>
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Rifa Navideña — DANZA.CORBAN</title>
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: #f5e9d3; /* Beige navideño */
-        font-family: Arial, sans-serif;
-    }
+  /* ---------- Base / colores ---------- */
+  :root{
+    --bg:#f6efe7;
+    --card:#fff;
+    --gold:#e7c165;
+    --soft-red:#c23b3b;
+    --soft-green:#2f9a58;
+    --border:#ded5c6;
+    --muted:#6b6057;
+    --paid:#9ae6b4;
+    --partial:#fde18a;
+    --maxw:720px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter, "Lora", serif; background:linear-gradient(180deg,var(--bg),#fff); color:#222;
+    display:flex; justify-content:center; padding:18px;
+  }
+  .wrap{
+    width:100%; max-width:var(--maxw); background:rgba(255,255,255,0.95); border-radius:14px; padding:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.06);
+  }
 
-    .container {
-        max-width: 420px;
-        margin: auto;
-        padding: 15px;
-    }
+  /* ---------- Header ---------- */
+  .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+  .brand{
+    display:flex;flex-direction:column;
+  }
+  .title{font-size:20px;color:var(--gold);font-weight:800;letter-spacing:0.4px}
+  .church{font-size:13px;color:var(--muted);margin-top:2px}
+  .rightMeta{text-align:right}
+  .alias{font-weight:700;color:var(--gold);font-size:13px}
+  .owner{font-size:12px;color:var(--muted);margin-top:4px}
 
-    h2 {
-        text-align: center;
-        color: #b01515;
-        font-size: 28px;
-        font-weight: bold;
-    }
+  /* ---------- Description card ---------- */
+  .description{
+    margin-top:12px;
+    background:var(--card);padding:12px;border-radius:10px;border:1px solid var(--border);
+    font-size:14px;color:#222;line-height:1.35;
+  }
+  .description strong{color:#000}
+  .prizes{margin-top:8px;font-size:14px}
 
-    .descripcion {
-        background: rgba(255,255,255,0.8);
-        padding: 12px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        border-left: 6px solid #b01515;
-        font-size: 16px;
-    }
+  /* ---------- Controls / stats ---------- */
+  .stats{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;align-items:center}
+  .pill{background:var(--card);padding:8px 10px;border-radius:10px;border:1px solid var(--border);font-size:13px}
 
-    #loginBox {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 25px;
-        box-shadow: 0 0 8px rgba(0,0,0,0.2);
-    }
+  .actions{display:flex;gap:8px;align-items:center}
+  .btn{padding:8px 12px;border-radius:10px;border:0;background:#222;color:#fff;cursor:pointer;font-weight:700}
+  .btn.secondary{background:#fff;color:#222;border:1px solid var(--border)}
+  .linkish{background:transparent;border:0;color:var(--soft-red);font-weight:700;cursor:pointer}
 
-    input {
-        width: 100%;
-        padding: 10px;
-        margin-top: 6px;
-        margin-bottom: 15px;
-        border-radius: 6px;
-        border: 1px solid #aaa;
-    }
+  /* ---------- Grid ---------- */
+  .grid-wrap{background:var(--card);padding:10px;border-radius:12px;border:1px solid var(--border)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px}
+  .cell{
+    background:white;border-radius:8px;border:1px solid var(--border);aspect-ratio:1/1;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;position:relative;padding:6px;
+    touch-action: manipulation;
+  }
+  .cell:hover{transform:translateY(-4px);transition:all .12s}
+  .cell .nameTip{position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:4px 8px;border-radius:6px;font-size:12px;white-space:nowrap;display:none}
+  .cell.showTip .nameTip{display:block}
 
-    button {
-        width: 100%;
-        padding: 10px;
-        background: #b01515;
-        border: none;
-        border-radius: 6px;
-        color: white;
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
+  .cell.paid{background:var(--paid);color:#064e3b;text-decoration:line-through}
+  .cell.partial{background:var(--partial);color:#7a3e00}
 
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 8px;
-    }
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.28);display:none;align-items:center;justify-content:center;z-index:80}
+  .modal{width:92%;max-width:420px;background:#fff;padding:14px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.2)}
+  .modal h3{margin:0 0 8px 0}
+  .input{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);margin-bottom:10px}
+  .row{display:flex;gap:8px}
+  .small{font-size:13px;color:var(--muted)}
+  .loginBadge{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center}
 
-    .num {
-        background: white;
-        padding: 12px;
-        text-align: center;
-        border-radius: 8px;
-        font-size: 18px;
-        border: 2px solid #b01515;
-        cursor: pointer;
-        min-height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-    }
+  /* confetti canvas */
+  #confetti{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:120}
 
-    .completo {
-        background: #4caf50 !important;
-        color: white;
-    }
-
-    .senado {
-        background: #ffca28 !important;
-        color: black;
-    }
-
-    .nombre {
-        font-size: 12px;
-        margin-top: 2px;
-    }
-
+  /* responsive tweaks */
+  @media (max-width:420px){
+    .title{font-size:18px}
+    .cell{font-size:13px}
+  }
 </style>
 </head>
-
 <body>
+<canvas id="confetti"></canvas>
 
-<div class="container">
-
-    <h2>🎄 Rifa Navideña 🎄</h2>
-
-    <div class="descripcion">
-        ¡Participa de esta hermosa rifa navideña!  
-        Cada número tiene un dueño y se actualiza en tiempo real.  
-        Si ves un número libre, ¡puedes reservarlo al instante!  
-        Cuando todos los números estén vendidos… 🎉  
-        ¡La página celebrará automáticamente con confetti!
+<div class="wrap">
+  <div class="header">
+    <div class="brand">
+      <div class="title">Rifa Navideña — DANZA.CORBAN</div>
+      <div class="church">Adorando al Rey Jesucristo · Ministerio: DANZA.CORBAN</div>
+      <div class="owner">A nombre de: <strong>Elizabeth Denise Perez Romero</strong></div>
     </div>
 
-    <!-- LOGIN -->
-    <div id="loginBox">
-        <h3>Acceso para editar</h3>
-        <input type="text" id="user" placeholder="Usuario">
-        <input type="password" id="pass" placeholder="Contraseña">
-        <button onclick="login()">Ingresar</button>
+    <div class="rightMeta">
+      <div class="alias">Alias: DANZA.CORBAN</div>
+      <div style="height:8px"></div>
+      <div class="loginBadge" id="loginBadge">
+        Modo: <strong id="modeLabel">Vista</strong>
+        <button class="btn secondary" id="btnLogin">Iniciar sesión</button>
+        <button class="btn secondary" id="btnLogout" style="display:none">Cerrar sesión</button>
+      </div>
     </div>
+  </div>
 
-    <!-- GRID -->
-    <div id="grid" class="grid"></div>
+  <div class="description" id="descriptionEl">
+    <strong>DESCRIPCIÓN</strong><br>
+    Bienvenidos a la rifa navideña del ministerio. Cada número cuesta <strong>$2.500</strong> y al adquirirlo ayudas a sostener las actividades y propósitos del ministerio.<br>
 
+    <div class="prizes">
+      <strong>PREMIOS</strong><br>
+      • <strong>1er premio:</strong> Caja navideña completa (sidras, pan dulce, turrón, confites y más).<br>
+      • <strong>2do premio:</strong> Sidra + pan dulce.<br>
+      • <strong>3er premio:</strong> Sorpresa sorpresa.<br>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="pill">Vendidos: <strong id="countPaid">0</strong></div>
+    <div class="pill">Medio pago: <strong id="countPartial">0</strong></div>
+    <div class="pill">Recaudado: <strong id="recaudo">$0</strong></div>
+    <div style="flex:1"></div>
+    <div class="actions">
+      <button class="btn secondary" id="exportBtn">Exportar CSV</button>
+      <button class="btn" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="grid" id="grid"></div>
+  </div>
 </div>
 
-<!-- CONFETTI -->
-<canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<!-- Edit / View Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="modalTitle">Número X</h3>
+    <input id="buyerInput" class="input" placeholder="Nombre del comprador (opcional)" />
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn" id="btnMarkPaid">Pago completo</button>
+      <button class="btn" id="btnMarkPartial" style="background:var(--partial);color:#000">Señado</button>
+      <button class="btn secondary" id="btnClear">Disponible</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn secondary" id="btnClose">Cerrar</button>
+    </div>
+    <div style="height:8px"></div>
+    <div class="small">*Solo usuarios autorizados pueden guardar cambios.</div>
+  </div>
+</div>
 
-<!-- FIREBASE -->
+<!-- Login modal -->
+<div class="overlay" id="overlayLogin" style="display:none;z-index:100">
+  <div class="modal">
+    <h3>Acceso editor</h3>
+    <input id="userInput" class="input" placeholder="Usuario" />
+    <input id="passInput" class="input" type="password" placeholder="Contraseña" />
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="loginSubmit">Entrar</button>
+      <button class="btn secondary" id="loginCancel">Cancelar</button>
+    </div>
+    <div style="height:8px"></div>
+    <div class="small">Usuario autorizado: <strong>Elizabeth</strong></div>
+  </div>
+</div>
+
 <script type="module">
-    // CONFIG QUE ME MANDASTE:
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, update } 
-        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+/* ================== FIREBASE (Realtime DB) ================== */
+/* Usamos la config que nos diste */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, set, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDqoy6EVdue9teQ1CD0nzTCl-hzR57z9PI",
-        authDomain: "rifa-iglesia.firebaseapp.com",
-        projectId: "rifa-iglesia",
-        storageBucket: "rifa-iglesia.firebasestorage.app",
-        messagingSenderId: "629304867602",
-        appId: "1:629304867602:web:38954544129d6161f451cb"
-    };
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDqoy6EVdue9teQ1CD0nzTCl-hzR57z9PI",
+  authDomain: "rifa-iglesia.firebaseapp.com",
+  projectId: "rifa-iglesia",
+  storageBucket: "rifa-iglesia.firebasestorage.app",
+  messagingSenderId: "629304867602",
+  appId: "1:629304867602:web:38954544129d6161f451cb",
+  databaseURL: "https://rifa-iglesia-default-rtdb.firebaseio.com/"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+const app = initializeApp(FIREBASE_CONFIG);
+const db = getDatabase(app);
+const rootRef = ref(db, 'rifa'); // ruta donde guardamos 1..100
 
-    let admin = false;
+/* ========== Auth (simple cliente) ========== */
+const ALLOWED_USER = "Elizabeth";
+const ALLOWED_PASS = "Cristo7294";
 
-    // LOGIN
-    function login() {
-        const u = document.getElementById("user").value;
-        const p = document.getElementById("pass").value;
+let editorMode = false;
+const btnLogin = document.getElementById('btnLogin');
+const btnLogout = document.getElementById('btnLogout');
+const modeLabel = document.getElementById('modeLabel');
 
-        if (u === "Elizabeth" && p === "Cristo7294") {
-            admin = true;
-            alert("Acceso concedido ✓");
-            document.getElementById("loginBox").style.display = "none";
-        } else {
-            alert("Usuario o contraseña incorrectos");
-        }
+btnLogin.addEventListener('click', ()=> {
+  document.getElementById('overlayLogin').style.display = 'flex';
+});
+document.getElementById('loginCancel').addEventListener('click', ()=> document.getElementById('overlayLogin').style.display = 'none');
+
+document.getElementById('loginSubmit').addEventListener('click', ()=>{
+  const u = (document.getElementById('userInput').value||'').trim();
+  const p = (document.getElementById('passInput').value||'').trim();
+  if(u === ALLOWED_USER && p === ALLOWED_PASS){
+    editorMode = true;
+    modeLabel.innerHTML = '<strong>Editor</strong>';
+    btnLogin.style.display = 'none';
+    btnLogout.style.display = 'inline-block';
+    document.getElementById('overlayLogin').style.display = 'none';
+    sessionStorage.setItem('rifa_editor','true');
+    alert('Acceso concedido — ya podés editar');
+  } else {
+    alert('Usuario o contraseña incorrectos');
+  }
+});
+btnLogout.addEventListener('click', ()=>{
+  editorMode = false;
+  modeLabel.innerHTML = '<strong>Vista</strong>';
+  btnLogin.style.display = 'inline-block';
+  btnLogout.style.display = 'none';
+  sessionStorage.removeItem('rifa_editor');
+});
+
+/* Restaurar sesión si existe */
+if(sessionStorage.getItem('rifa_editor') === 'true'){
+  editorMode = true;
+  modeLabel.innerHTML = '<strong>Editor</strong>';
+  btnLogin.style.display = 'none';
+  btnLogout.style.display = 'inline-block';
+}
+
+/* ========== Grid dinámico 1..100 ========== */
+const gridEl = document.getElementById('grid');
+const overlayEl = document.getElementById('overlay');
+const buyerInput = document.getElementById('buyerInput');
+const btnMarkPaid = document.getElementById('btnMarkPaid');
+const btnMarkPartial = document.getElementById('btnMarkPartial');
+const btnClear = document.getElementById('btnClear');
+const btnClose = document.getElementById('btnClose');
+const countPaidEl = document.getElementById('countPaid');
+const countPartialEl = document.getElementById('countPartial');
+const recaudoEl = document.getElementById('recaudo');
+const exportBtn = document.getElementById('exportBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+let selectedNum = null;
+const PRICE = 2500;
+const TOTAL = 100;
+
+/* crear celdas */
+function buildGrid(){
+  gridEl.innerHTML = '';
+  for(let i=1;i<=TOTAL;i++){
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.dataset.num = i;
+    c.id = 'cell-'+i;
+    c.innerHTML = `<div class="numLabel">${i}</div><div class="nameTip"></div>`;
+    c.addEventListener('click', ()=> openModal(i));
+    gridEl.appendChild(c);
+  }
+}
+buildGrid();
+
+/* abrir modal (solo muestra; botón guardado depende de editorMode) */
+function openModal(num){
+  selectedNum = num;
+  const itemRef = ref(db, `rifa/${num}`);
+  // obtener estado actual para título
+  // la base live listener actualiza UI, pero queremos título actualizado
+  buyerInput.value = ''; // default
+  document.getElementById('modalTitle').innerText = `Número ${num}`;
+  // mostrar datos si existen:
+  // (la UI principal ya tiene nameTip, pero cargamos aquí también)
+  onValue(itemRef, snap=>{
+    const v = snap.val();
+    if(v){
+      buyerInput.value = v.name || '';
+      document.getElementById('modalTitle').innerText = `Número ${num} — ${v.state === 'paid' ? 'Pagado' : v.state === 'partial' ? 'Señado' : 'Disponible'}`;
     }
+  }, {onlyOnce:true});
+  // desactivar botones si no es editor
+  btnMarkPaid.disabled = !editorMode;
+  btnMarkPartial.disabled = !editorMode;
+  btnClear.disabled = !editorMode;
+  overlayEl.style.display = 'flex';
+}
+function closeModal(){ overlayEl.style.display = 'none'; selectedNum = null; }
 
-    // CREAR CUADROS (1 a 25 por ejemplo)
-    const grid = document.getElementById("grid");
-    const totalNumeros = 100;
+/* acciones modal */
+btnMarkPaid.addEventListener('click', ()=>{
+  if(!editorMode) return alert('Solo usuarios autorizados pueden editar.');
+  const name = (buyerInput.value||'').trim();
+  set(ref(db, `rifa/${selectedNum}`), { state:'paid', name: name });
+  closeModal();
+});
+btnMarkPartial.addEventListener('click', ()=>{
+  if(!editorMode) return alert('Solo usuarios autorizados pueden editar.');
+  const name = (buyerInput.value||'').trim();
+  set(ref(db, `rifa/${selectedNum}`), { state:'partial', name: name });
+  closeModal();
+});
+btnClear.addEventListener('click', ()=>{
+  if(!editorMode) return alert('Solo usuarios autorizados pueden editar.');
+  remove(ref(db, `rifa/${selectedNum}`));
+  closeModal();
+});
+btnClose.addEventListener('click', closeModal);
 
-    for (let i = 1; i <= totalNumeros; i++) {
-        let div = document.createElement("div");
-        div.classList.add("num");
-        div.id = "num" + i;
-        div.innerHTML = i;
-        div.onclick = () => editarNumero(i);
-        grid.appendChild(div);
+/* ========== Escuchar DB en tiempo real y renderizar ========== */
+onValue(ref(db, 'rifa'), (snap)=>{
+  const all = snap.val() || {};
+  let paid = 0, partial = 0;
+  for(let i=1;i<=TOTAL;i++){
+    const cell = document.getElementById('cell-'+i);
+    const tip = cell.querySelector('.nameTip');
+    cell.classList.remove('paid','partial','showTip');
+    tip.textContent = '';
+    const item = all[i];
+    if(item){
+      if(item.state === 'paid'){ cell.classList.add('paid'); paid++; }
+      else if(item.state === 'partial'){ cell.classList.add('partial'); partial++; }
+      if(item.name) { tip.textContent = item.name; cell.classList.add('showTip'); }
+      // mostrar nombre debajo del número pequeño opcional:
+      const label = cell.querySelector('.numLabel');
+      if(label) label.textContent = i;
     }
+  }
+  countPaidEl.textContent = paid;
+  countPartialEl.textContent = partial;
+  const totalMoney = paid*PRICE + Math.round(partial*(PRICE/2));
+  recaudoEl.textContent = `$${totalMoney.toLocaleString()}`;
+  // confetti si todo vendido
+  if(paid >= TOTAL) triggerConfetti();
+});
 
-    // ESCUCHAR CAMBIOS EN TIEMPO REAL
-    const numerosRef = ref(db, "rifa/");
-    onValue(numerosRef, (snapshot) => {
-        const data = snapshot.val() || {};
+/* ========== Export CSV (descarga) ========== */
+exportBtn.addEventListener('click', ()=> {
+  // leer snapshot una vez
+  const snapshotRef = ref(db, 'rifa');
+  onValue(snapshotRef, snap=>{
+    const all = snap.val() || {};
+    let csv = "numero,estado,nombre\n";
+    for(let i=1;i<=TOTAL;i++){
+      const it = all[i] || { state:'available', name:'' };
+      csv += `${i},${it.state},${JSON.stringify(it.name||'')}\n`;
+    }
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'rifa_estado.csv'; a.click();
+    URL.revokeObjectURL(url);
+    // detach this one-time listener:
+    // (onValue returns unsubscribe; but since we used onValue we can't easily unsubscribe here. It's OK — small extra.)
+  }, {onlyOnce:true});
+});
 
-        let vendidos = 0;
+/* ========== Reset (solo editor) ========== */
+resetBtn.addEventListener('click', ()=> {
+  if(!editorMode) return alert('Solo autorizados pueden resetear.');
+  if(!confirm('¿Borrar todos los datos de la rifa? Esto afectará a todos en vivo.')) return;
+  set(ref(db, 'rifa'), null);
+});
 
-        for (let i = 1; i <= totalNumeros; i++) {
-            const div = document.getElementById("num" + i);
-            div.className = "num"; // reset
-            div.innerHTML = i;
-
-            if (data[i]) {
-                if (data[i].estado === "completo") {
-                    div.classList.add("completo");
-                }
-                if (data[i].estado === "senado") {
-                    div.classList.add("senado");
-                }
-
-                if (data[i].nombre) {
-                    div.innerHTML = i + `<div class='nombre'>${data[i].nombre}</div>`;
-                }
-
-                vendidos++;
-            }
-        }
-
-        // SI TODOS LOS NÚMEROS ESTÁN VENDIDOS → CONFETTI
-        if (vendidos === totalNumeros) {
-            confetti();
-        }
+/* ========== Confetti (simple) ========== */
+let confettiTimer = null;
+function triggerConfetti(){
+  if(confettiTimer) return;
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  canvas.width = innerWidth; canvas.height = innerHeight;
+  const pieces = [];
+  for(let i=0;i<200;i++){
+    pieces.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*-canvas.height,
+      w: Math.random()*8+6,
+      h: Math.random()*8+6,
+      v: Math.random()*2+2,
+      c: ['#e6c15c','#f97316','#ef4444','#34d399'][Math.floor(Math.random()*4)]
     });
-
-    // FUNCIÓN PARA EDITAR
-    function editarNumero(num) {
-        if (!admin) return alert("Solo usuarios autorizados pueden editar.");
-
-        const nombre = prompt("Nombre del comprador:");
-        if (nombre === null) return;
-
-        const estado = prompt("Estado:\n1 = Pago completo\n2 = Señado / incompleto");
-        let tipo = "senado";
-
-        if (estado === "1") tipo = "completo";
-        if (estado !== "1" && estado !== "2") return alert("Opción no válida.");
-
-        update(ref(db, "rifa/" + num), {
-            nombre: nombre,
-            estado: tipo
-        });
+  }
+  confettiTimer = setInterval(()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const p of pieces){
+      ctx.fillStyle = p.c;
+      ctx.fillRect(p.x,p.y,p.w,p.h);
+      p.y += p.v;
+      if(p.y > canvas.height) p.y = -20;
     }
+  }, 20);
+  setTimeout(()=>{ clearInterval(confettiTimer); confettiTimer=null; ctx.clearRect(0,0,canvas.width,canvas.height); }, 10000);
+}
 
+/* ========== Local-storage listener to restore editor session ========== */
+if(sessionStorage.getItem('rifa_editor') === 'true'){
+  editorMode = true; modeLabel.innerHTML = '<strong>Editor</strong>'; btnLogin.style.display = 'none'; btnLogout.style.display = 'inline-block';
+}
+
+/* ========== Small UX: click outside modal closes it ========== */
+document.getElementById('overlay').addEventListener('click', (e)=>{ if(e.target === document.getElementById('overlay')) closeModal(); });
+document.getElementById('overlayLogin').addEventListener('click', (e)=>{ if(e.target === document.getElementById('overlayLogin')) document.getElementById('overlayLogin').style.display='none'; });
+
+/* ========== Login modal handlers ========== */
+document.getElementById('btnLogin').addEventListener('click', ()=> document.getElementById('overlayLogin').style.display='flex');
+document.getElementById('loginSubmit').addEventListener('click', ()=> {
+  // handled above, but ensure session saved:
+  const u = (document.getElementById('userInput').value||'').trim();
+  const p = (document.getElementById('passInput').value||'').trim();
+  if(u === ALLOWED_USER && p === ALLOWED_PASS){
+    editorMode = true;
+    sessionStorage.setItem('rifa_editor','true');
+    modeLabel.innerHTML = '<strong>Editor</strong>';
+    btnLogin.style.display = 'none';
+    btnLogout.style.display = 'inline-block';
+    document.getElementById('overlayLogin').style.display = 'none';
+    alert('Acceso concedido — ya podés editar');
+  } else {
+    alert('Usuario o contraseña incorrectos');
+  }
+});
+
+/* ========== End module ========== */
 </script>
-
 </body>
 </html>
