@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rifa Navideña</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f5e9d3; /* Beige navideño */
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        max-width: 420px;
+        margin: auto;
+        padding: 15px;
+    }
+
+    h2 {
+        text-align: center;
+        color: #b01515;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .descripcion {
+        background: rgba(255,255,255,0.8);
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 6px solid #b01515;
+        font-size: 16px;
+    }
+
+    #loginBox {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;
+        margin-bottom: 15px;
+        border-radius: 6px;
+        border: 1px solid #aaa;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background: #b01515;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+    }
+
+    .num {
+        background: white;
+        padding: 12px;
+        text-align: center;
+        border-radius: 8px;
+        font-size: 18px;
+        border: 2px solid #b01515;
+        cursor: pointer;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .completo {
+        background: #4caf50 !important;
+        color: white;
+    }
+
+    .senado {
+        background: #ffca28 !important;
+        color: black;
+    }
+
+    .nombre {
+        font-size: 12px;
+        margin-top: 2px;
+    }
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>🎄 Rifa Navideña 🎄</h2>
+
+    <div class="descripcion">
+        ¡Participa de esta hermosa rifa navideña!  
+        Cada número tiene un dueño y se actualiza en tiempo real.  
+        Si ves un número libre, ¡puedes reservarlo al instante!  
+        Cuando todos los números estén vendidos… 🎉  
+        ¡La página celebrará automáticamente con confetti!
+    </div>
+
+    <!-- LOGIN -->
+    <div id="loginBox">
+        <h3>Acceso para editar</h3>
+        <input type="text" id="user" placeholder="Usuario">
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button onclick="login()">Ingresar</button>
+    </div>
+
+    <!-- GRID -->
+    <div id="grid" class="grid"></div>
+
+</div>
+
+<!-- CONFETTI -->
+<canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+<!-- FIREBASE -->
+<script type="module">
+    // CONFIG QUE ME MANDASTE:
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update } 
+        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDqoy6EVdue9teQ1CD0nzTCl-hzR57z9PI",
+        authDomain: "rifa-iglesia.firebaseapp.com",
+        projectId: "rifa-iglesia",
+        storageBucket: "rifa-iglesia.firebasestorage.app",
+        messagingSenderId: "629304867602",
+        appId: "1:629304867602:web:38954544129d6161f451cb"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let admin = false;
+
+    // LOGIN
+    function login() {
+        const u = document.getElementById("user").value;
+        const p = document.getElementById("pass").value;
+
+        if (u === "Elizabeth" && p === "Cristo7294") {
+            admin = true;
+            alert("Acceso concedido ✓");
+            document.getElementById("loginBox").style.display = "none";
+        } else {
+            alert("Usuario o contraseña incorrectos");
+        }
+    }
+
+    // CREAR CUADROS (1 a 25 por ejemplo)
+    const grid = document.getElementById("grid");
+    const totalNumeros = 100;
+
+    for (let i = 1; i <= totalNumeros; i++) {
+        let div = document.createElement("div");
+        div.classList.add("num");
+        div.id = "num" + i;
+        div.innerHTML = i;
+        div.onclick = () => editarNumero(i);
+        grid.appendChild(div);
+    }
+
+    // ESCUCHAR CAMBIOS EN TIEMPO REAL
+    const numerosRef = ref(db, "rifa/");
+    onValue(numerosRef, (snapshot) => {
+        const data = snapshot.val() || {};
+
+        let vendidos = 0;
+
+        for (let i = 1; i <= totalNumeros; i++) {
+            const div = document.getElementById("num" + i);
+            div.className = "num"; // reset
+            div.innerHTML = i;
+
+            if (data[i]) {
+                if (data[i].estado === "completo") {
+                    div.classList.add("completo");
+                }
+                if (data[i].estado === "senado") {
+                    div.classList.add("senado");
+                }
+
+                if (data[i].nombre) {
+                    div.innerHTML = i + `<div class='nombre'>${data[i].nombre}</div>`;
+                }
+
+                vendidos++;
+            }
+        }
+
+        // SI TODOS LOS NÚMEROS ESTÁN VENDIDOS → CONFETTI
+        if (vendidos === totalNumeros) {
+            confetti();
+        }
+    });
+
+    // FUNCIÓN PARA EDITAR
+    function editarNumero(num) {
+        if (!admin) return alert("Solo usuarios autorizados pueden editar.");
+
+        const nombre = prompt("Nombre del comprador:");
+        if (nombre === null) return;
+
+        const estado = prompt("Estado:\n1 = Pago completo\n2 = Señado / incompleto");
+        let tipo = "senado";
+
+        if (estado === "1") tipo = "completo";
+        if (estado !== "1" && estado !== "2") return alert("Opción no válida.");
+
+        update(ref(db, "rifa/" + num), {
+            nombre: nombre,
+            estado: tipo
+        });
+    }
+
+</script>
+
+</body>
+</html>
